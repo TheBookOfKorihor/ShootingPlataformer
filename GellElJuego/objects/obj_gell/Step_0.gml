@@ -6,9 +6,10 @@ var left  = keyboard_check(vk_left);
 var right = keyboard_check(vk_right);
 
 //DEBUG MOVEMENT
-xs = 0;
-ys = 0;
+xs = 0; //xspeed
+ys = 0; //yspeed
 debug_speed = 10;
+
 if (up)    { ys = -debug_speed; }
 if (down)  { ys = debug_speed;  }
 if (left)  { xs = -debug_speed; }
@@ -20,16 +21,19 @@ if (right) { xs = debug_speed;  }
 //if (right)	{show_debug_message("Down"); hmove = gellspeed;}
 //if (left)	{show_debug_message("Left"); hmove = -gellspeed;}
 
+var height = sprite_height;
+var width  = sprite_width;
+
 //Collision Booleans
 tl_collides = wall_at_point(x,y);
-tr_collides = wall_at_point(x+32, y);
-bl_collides = wall_at_point(x, y+32);
-br_collides = wall_at_point(x+32, y+32);
+tr_collides = wall_at_point(x+width-1, y);
+bl_collides = wall_at_point(x, y+height-1);
+br_collides = wall_at_point(x+width-1, y+height-1);
 
-corners_colliding = tl_collides + tr_collides + bl_collides + br_collides;
+var corners_colliding = tl_collides + tr_collides + bl_collides + br_collides;
 
-newx = x;
-newy = y;
+var newx = x;
+var newy = y;
 
 if (corners_colliding == 4)
 {	//if completely inside block, snap upwards to next block
@@ -38,13 +42,13 @@ if (corners_colliding == 4)
 else if(corners_colliding == 2 || corners_colliding == 3)
 {
 	if (tl_collides && bl_collides)
-	{	//snap left to wall
+	{	//snap her left side to wall
 		newx = (x & ~31) + 31;
 		if (xs < 0)
 			xs = 0;
 	}
 	else if (tr_collides && br_collides)
-	{	//snap right to wall
+	{	//snap her right side to wall
 		newx = (x & ~31) + 1
 		if (xs > 0)
 			xs = 0;
@@ -52,13 +56,13 @@ else if(corners_colliding == 2 || corners_colliding == 3)
 	
 	
 	if (tl_collides && tr_collides)
-	{	//snap top to ceilling
+	{	//snap her top to ceilling
 		newy = (y & ~31) + 31;
 		if (ys < 0)
 			ys = 0;
 	}
 	else if (bl_collides && br_collides)
-	{	//snap bottom to floor
+	{	//snap her bottom to floor
 		newy = (y & ~31) + 1
 		if (ys > 0)
 			ys = 0;
@@ -66,29 +70,126 @@ else if(corners_colliding == 2 || corners_colliding == 3)
 }
 else if(corners_colliding == 1)
 {	
-	lastx = x + 32 - xs;
-	lasty = y + 32 - ys;
-	
 	if (br_collides)
-	{		
-		cornerx = (x & ~31) + 32
-		cornery = (y & ~31) + 32
+	{	
+		var bottom_right_x = x + 32;
+		var bottom_right_y = y + 32;
 		
-		if (lastx > cornerx && lasty < cornery) //fall from above
+		lastx = bottom_right_x - xs; 
+		lasty = bottom_right_y - ys;
+		
+		tilex = (x & ~31) + 32
+		tiley = (y & ~31) + 32
+		
+		if (lastx > tilex && lasty < tiley) //gel falls from above
+		{	//snap her bottom to floor
+			newy = (y & ~31) + 1
+			if (ys > 0)
+				ys = 0;
+		}
+		else if (lastx < tilex && lasty < tiley) //gel falls into corner
+		{	//snap her bottom to floor
+			newy = (y & ~31) + 1
+			if (ys > 0)
+				ys = 0;
+		}
+		else if(lastx < tilex && lasty > tiley) //gel crashes into left side of tile
+		{	//snap her right side to wall
+			newx = (x & ~31) + 1
+			if (xs > 0)
+				xs = 0;
+		}	
+	}
+	else if(bl_collides)
+	{
+		var bottom_left_x = x;
+		var bottom_left_y = y + 32;
+		
+		lastx = bottom_left_x - xs; 
+		lasty = bottom_left_y - ys;
+		
+		tilex = (x & ~31) + 32
+		tiley = (y & ~31) + 32
+		
+		if (lastx < tilex && lasty < tiley) //gel falls from above
 		{	//snap bottom to floor
 			newy = (y & ~31) + 1
 			if (ys > 0)
 				ys = 0;
 		}
-		else if(lastx < cornerx && lasty > cornery) //crash from the left
-		{	//snap right to wall
+		else if (lastx > tilex && lasty < tiley) //gel falls into corner
+		{	//snap her bottom to floor
+			newy = (y & ~31) + 1
+			if (ys > 0)
+				ys = 0;
+		}
+		else if(lastx > tilex && lasty > tiley) //gel crashes into the right side of tile
+		{	//snap left to wall
+			newx = (x & ~31) + 31;
+			if (xs < 0)
+				xs = 0;
+		}
+	}
+	else if(tr_collides)
+	{
+		var top_right_x = x + 32;
+		var top_right_y = y;
+		
+		lastx = top_right_x - xs; 
+		lasty = top_right_y - ys;
+		
+		tilex = (x & ~31) + 32
+		tiley = (y & ~31) + 32
+		
+		if (lastx > tilex && lasty > tiley) //gel hits her head
+		{	//snap her top to ceilling
+			newy = (y & ~31) + 31;
+			if (ys < 0)
+				ys = 0;
+		}
+		else if (lastx < tilex && lasty > tiley) //gel falls into corner
+		{	//snap her top to ceilling
+			newy = (y & ~31) + 31;
+			if (ys < 0)
+				ys = 0;
+		}
+		else if(lastx < tilex && lasty < tiley) //gel crashes into left side of tile
+		{	//snap her right side to wall
 			newx = (x & ~31) + 1
 			if (xs > 0)
 				xs = 0;
 		}
-	}else if(tr_collides){
-	}else if(bl_collides){
-	}else{ //br_collides
+	}
+	else
+	{ //tl_collides
+	
+		var top_left_x = x;
+		var top_left_y = y;
+		
+		lastx = top_left_x - xs; 
+		lasty = top_left_y - ys;
+		
+		tilex = (x & ~31) + 32
+		tiley = (y & ~31) + 32
+		
+		if (lastx < tilex && lasty > tiley) //gel hits her head
+		{	//snap her top to ceilling
+			newy = (y & ~31) + 31;
+			if (ys < 0)
+				ys = 0;
+		}
+		else if (lastx > tilex && lasty > tiley) //gel falls into corner
+		{	//snap her top to ceilling
+			newy = (y & ~31) + 31;
+			if (ys < 0)
+				ys = 0;
+		}
+		else if(lastx > tilex && lasty < tiley) //gel crashes into right side of tile
+		{	//snap her left side to wall
+			newx = (x & ~31) + 31;
+			if (xs < 0)
+				xs = 0;
+		}
 	}
 }
 
