@@ -1,49 +1,36 @@
 /// @description Insert description here
 // You can write your code in this editor
-up = keyboard_check_pressed(vk_up);
-down = keyboard_check_pressed(vk_down);
-left = keyboard_check(vk_left);
-right = keyboard_check(vk_right);
+var up    = keyboard_check(vk_up);
+var down  = keyboard_check(vk_down);
+var left  = keyboard_check(vk_left);
+var right = keyboard_check(vk_right);
 
-vmove = 0;
+//DEBUG MOVEMENT
+xs = 0; //xspeed
+ys = 0; //yspeed
+debug_speed = 10;
 
-if (right=true)
-{
-	hmove= gellspeed;
-}
-
-if (left= true)
-{
-	hmove= -gellspeed;
-}
-
-if (up)
-{
-	vmove= jump;
-}
-
-if (down)
-{
-	
-}
+if (up)    { ys = -debug_speed; }
+if (down)  { ys = debug_speed;  }
+if (left)  { xs = -debug_speed; }
+if (right) { xs = debug_speed;  }
 
 
 
+//if (up)	    {show_debug_message("Up  "); vmove= jump;} 
+//if (right)	{show_debug_message("Down"); hmove = gellspeed;}
+//if (left)	{show_debug_message("Left"); hmove = -gellspeed;}
 
+var height = sprite_height;
+var width  = sprite_width;
 
-x+= hmove;
-y -= vmove-gravy;
+var collision_set = get_collision_set();
 
-if (hmove!=0 && !place_free(x+hmove,y))
-	{
-		if hmove>0 move_contact_solid(0,hmove)
-		if hmove<0 move_contact_solid(180,-hmove)
-		hmove=0;
-	}
-	
-if (vmove!=0 && !place_free(x+hmove,y+vmove))
-	{
-		if vmove>0 move_contact_solid(270,vmove)
-		if vmove<0 move_contact_solid(90,-vmove)
-		vmove= 0;
-	}
+resolve_collisions(collision_set);
+
+newx += xs;
+newy += ys;
+
+x = newx;
+y = newy;
+
